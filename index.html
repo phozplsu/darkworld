@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Тёмный Мир - Dark World</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050505; color: #eee; font-family: 'Courier New', monospace; }
+        #entry-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #entry-overlay h1 { color: #f00; font-size: 24px; letter-spacing: 8px; }
+        #start-btn { background: transparent; color: #666; border: 1px solid #444; padding: 15px 30px; cursor: pointer; margin-top: 20px; font-size: 16px; }
+        #start-btn:hover { color: #f00; border-color: #f00; background: rgba(255,0,0,0.1); }
+        #game-world { width: 100vw; height: 100vh; position: relative; }
+        .player { position: absolute; width: 80px; height: 80px; transition: none; text-align: center; z-index: 10; }
+        .sprite { width: 64px; height: 64px; image-rendering: pixelated; }
+        .name-tag { font-size: 12px; color: #ff0000; font-weight: bold; text-shadow: 1px 1px #000; }
+        #admin-panel { position: fixed; top: 10px; left: 10px; background: rgba(15, 0, 0, 0.95); border: 1px solid #f00; padding: 15px; border-radius: 5px; display: none; z-index: 10000; }
+        .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .admin-btns button { background: #100; color: #f66; border: 1px solid #f00; padding: 8px; cursor: pointer; font-size: 10px; position: relative; }
+        .admin-btns button:hover::after { content: attr(data-translate); position: absolute; bottom: -25px; left: 0; width: 100%; background: #f00; color: #fff; font-size: 9px; padding: 2px; }
+        #chat-container { position: fixed; bottom: 10px; right: 10px; width: 280px; background: rgba(0,0,0,0.9); border: 1px solid #444; padding: 10px; z-index: 1000; }
+        #messages { height: 120px; overflow-y: auto; font-size: 12px; color: #bbb; margin-bottom: 5px; border-bottom: 1px solid #222; }
+        #chat-input { width: 92%; background: #111; border: 1px solid #444; color: #fff; padding: 5px; outline: none; }
+    </style>
+</head>
+<body>
+
+<div id="entry-overlay">
+    <h1>ТЕМНЫЙ МИР</h1>
+    <button id="start-btn">ВОЙТИ В БЕЗДНУ</button>
+</div>
+
+<div id="game-world"></div>
+
+<div id="admin-panel">
+    <h3 style="color:#f00; font-size:12px; margin:0 0 10px 0; text-align:center;">АДМИН: PHOZ</h3>
+    <div class="admin-btns">
+        <button id="btn-reset" data-translate="Resetar Server">Сброс сервера</button>
+        <button id="btn-speed" data-translate="Velocidade">Скорость</button>
+        <button id="btn-alert" data-translate="Alerta">Оповещение</button>
+        <button id="btn-lock" data-translate="Lock/Unlock">Блокировка</button>
+        <button id="btn-stop" data-translate="Parar Música">Стоп музыка</button>
+    </div>
+</div>
+
+<div id="chat-container">
+    <div id="messages"></div>
+    <input type="text" id="chat-input" placeholder="Напишите что-нибудь...">
+</div>
+
+<audio id="bgm" loop><source src="lavendertown.m4a" type="audio/mpeg"></audio>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, onDisconnect, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+
+    const _0x1a2b = {
+        apiKey: btoa("QUl6YVN5QzcyZ05XVXd6Q1JES0x2SFdmRExCRUFIREx3MENK umbrellas").split(' ')[0], // Simulação de proteção
+        authDomain: "clubpenguin-59707.firebaseapp.com",
+        projectId: "clubpenguin-59707",
+        databaseURL: "https://clubpenguin-59707-default-rtdb.firebaseio.com",
+        appId: "1:1002861703688:web:fd9138101784ee13f8d7bd"
+    };
+
+    const app = initializeApp(_0x1a2b);
+    const db = getDatabase(app);
+
+
+    const _KEY = atob("UGhvenBsc3U4OTk="); 
+    
+    let u_name = "";
+    let u_id = Math.random().toString(36).substr(2, 9);
+    let _sys = false;
+    let pos = { x: 500, y: 300 };
+    let spd = 10;
+    let lck = false;
+    const ks = {};
+
+    const s_btn = document.getElementById('start-btn');
+    const aud = document.getElementById('bgm');
+
+    s_btn.onclick = () => {
+        aud.play().catch(() => {});
+        u_name = prompt("Nome:") || "Ghost";
+        
+
+        if(u_name === _KEY) {
+            _sys = true;
+            document.getElementById('admin-panel').style.display = 'block';
+        }
+        
+        document.getElementById('entry-overlay').style.display = 'none';
+        const r = ref(db, 'players/' + u_id);
+        onDisconnect(r).remove();
+        
+        setInterval(() => {
+            if(lck && !_sys) return;
+            let m = false;
+            if(ks['w']) { pos.y -= spd; m = true; }
+            if(ks['s']) { pos.y += spd; m = true; }
+            if(ks['a']) { pos.x -= spd; m = true; }
+            if(ks['d']) { pos.x += spd; m = true; }
+            set(r, { n: u_name, x: pos.x, y: pos.y, s: m ? "https://i.picasion.com/pic93/3f7f4f29b0737ab9b71c1898e3d71146.gif" : "https://i.picasion.com/pic93/478bf85eddea2b87a0d3c38712102f90.gif" });
+        }, 125);
+    };
+
+    window.onkeydown = e => ks[e.key.toLowerCase()] = true;
+    window.onkeyup = e => ks[e.key.toLowerCase()] = false;
+
+
+    document.getElementById('btn-reset').onclick = () => _sys && (remove(ref(db, 'players')), remove(ref(db, 'chat')));
+    document.getElementById('btn-speed').onclick = () => _sys && (spd = parseInt(prompt("Velocidade:", spd)) || 10);
+    document.getElementById('btn-alert').onclick = () => { if(_sys) { let m = prompt("Alerta:"); if(m) set(ref(db, 'cmd/alert'), {m: m, t: Date.now()}); } };
+    document.getElementById('btn-lock').onclick = () => _sys && set(ref(db, 'cmd/lock'), !lck);
+    document.getElementById('btn-stop').onclick = () => _sys && set(ref(db, 'cmd/stop'), Date.now());
+
+
+    onValue(ref(db, 'cmd/lock'), s => lck = s.val() || false);
+    onValue(ref(db, 'cmd/alert'), s => {
+        const d = s.val();
+
+        if(d && (Date.now() - d.t < 5000)) alert("SISTEMA: " + d.m);
+    });
+    onValue(ref(db, 'cmd/stop'), s => { if(s.val() && (Date.now() - s.val() < 5000)) aud.pause(); });
+
+
+    const ci = document.getElementById('chat-input');
+    ci.onkeypress = e => { if(e.key === 'Enter' && ci.value.trim()){ push(ref(db, 'chat'), {n: u_name, m: ci.value}); ci.value = ""; }};
+    onChildAdded(ref(db, 'chat'), s => {
+        const d = s.val();
+        const v = document.createElement('div');
+        v.innerHTML = `<span style="color:#f00">${d.n}:</span> ${d.m}`;
+        document.getElementById('messages').appendChild(v);
+        document.getElementById('messages').scrollTop = 9999;
+    });
+
+    onValue(ref(db, 'players'), s => {
+        const w = document.getElementById('game-world');
+        w.innerHTML = "";
+        const d = s.val();
+        for(let id in d) {
+            const p = d[id];
+            const v = document.createElement('div');
+            v.className = 'player'; v.style.left = p.x+'px'; v.style.top = p.y+'px';
+            v.innerHTML = `<div class="name-tag">${p.n}</div><img src="${p.s}" class="sprite">`;
+            w.appendChild(v);
+        }
+    });
+</script>
+</body>
+</html>
