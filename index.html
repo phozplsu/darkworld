@@ -5,18 +5,38 @@
     <title>Тёмный Мир - Dark World</title>
     <style>
         body { margin: 0; overflow: hidden; background: #050505; color: #eee; font-family: 'Courier New', monospace; }
+        
+        /* Overlay de Entrada */
         #entry-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #entry-overlay h1 { color: #f00; font-size: 24px; letter-spacing: 8px; }
         #start-btn { background: transparent; color: #666; border: 1px solid #444; padding: 15px 30px; cursor: pointer; margin-top: 20px; font-size: 16px; }
         #start-btn:hover { color: #f00; border-color: #f00; background: rgba(255,0,0,0.1); }
+
+        /* Mundo e Jogadores */
         #game-world { width: 100vw; height: 100vh; position: relative; }
         .player { position: absolute; width: 80px; height: 80px; transition: none; text-align: center; z-index: 10; }
         .sprite { width: 64px; height: 64px; image-rendering: pixelated; }
         .name-tag { font-size: 12px; color: #ff0000; font-weight: bold; text-shadow: 1px 1px #000; }
+
+        /* BANANAMP (Music Player) */
+        #winamp-container { position: fixed; top: 10px; right: 10px; width: 220px; background: #222; border: 2px solid #444; padding: 5px; z-index: 15000; font-size: 10px; color: #0f0; box-shadow: 3px 3px 0px #000; }
+        .winamp-title { background: #000080; color: white; padding: 2px 5px; margin-bottom: 5px; font-weight: bold; }
+        .playlist { list-style: none; padding: 0; margin: 0; background: #000; border: 1px solid #333; max-height: 60px; overflow-y: auto; }
+        .playlist li { padding: 3px; cursor: pointer; border-bottom: 1px solid #111; }
+        .playlist li:hover { background: #333; }
+        .playlist li.active { color: #fff; background: #f00; }
+
+        /* README Window */
+        #readme-window { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; background: #ccc; color: #000; border: 2px solid #fff; z-index: 300000; display: block; box-shadow: 10px 10px 0px rgba(0,0,0,0.5); }
+        .readme-header { background: #000080; color: white; padding: 3px 10px; display: flex; justify-content: space-between; align-items: center; }
+        .readme-content { padding: 15px; font-size: 13px; white-space: pre-wrap; height: 250px; overflow-y: auto; background: #fff; margin: 5px; border: 1px inset #eee; }
+        .close-btn { cursor: pointer; background: #ccc; border: 1px solid #000; padding: 0 5px; color: #000; }
+
+        /* Painel Admin e Chat */
         #admin-panel { position: fixed; top: 10px; left: 10px; background: rgba(15, 0, 0, 0.95); border: 1px solid #f00; padding: 15px; border-radius: 5px; display: none; z-index: 10000; }
         .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .admin-btns button { background: #100; color: #f66; border: 1px solid #f00; padding: 8px; cursor: pointer; font-size: 10px; position: relative; }
-        .admin-btns button:hover::after { content: attr(data-translate); position: absolute; bottom: -25px; left: 0; width: 100%; background: #f00; color: #fff; font-size: 9px; padding: 2px; }
+        .admin-btns button { background: #100; color: #f66; border: 1px solid #f00; padding: 8px; cursor: pointer; font-size: 10px; }
+        
         #chat-container { position: fixed; bottom: 10px; right: 10px; width: 280px; background: rgba(0,0,0,0.9); border: 1px solid #444; padding: 10px; z-index: 1000; }
         #messages { height: 120px; overflow-y: auto; font-size: 12px; color: #bbb; margin-bottom: 5px; border-bottom: 1px solid #222; }
         #chat-input { width: 92%; background: #111; border: 1px solid #444; color: #fff; padding: 5px; outline: none; }
@@ -26,19 +46,52 @@
 
 <div id="entry-overlay">
     <h1>ТЕМНЫЙ МИР</h1>
-    <button id="start-btn">ВОЙТИ В БЕЗДНУ</button>
+    <button id="start-btn">ВОЙTI В БЕЗДНУ</button>
+</div>
+
+
+<div id="readme-window">
+    <div class="readme-header">
+        <span>README.txt</span>
+        <button class="close-btn" onclick="document.getElementById('readme-window').style.display='none'">X</button>
+    </div>
+    <div class="readme-content">
+WELCOME TO ТЁМНЫЙ МИР (DARK WORLD.).
+
+HOW TO PLAY:
+- Use W, A, S, D for your character move.
+- Talk in chat.
+- ?? ?? ?????
+
+WARN:
+Your soul is here. 
+✋ 🕈✋☹☹ ☝☜❄ ✡⚐🕆☼ 💧⚐🕆☹ ✋ 🕈✋☹☹ ☝☜❄ ✡⚐🕆☼ 💧⚐🕆☹ ✋ 🕈✋☹☹ ☝☜❄ ✡⚐🕆☼ 💧⚐🕆☹ ✋ 🕈✋☹☹ ☝☜❄ ✡⚐🕆☼ 💧⚐🕆☹.
+
+-- PHOZ
+    </div>
 </div>
 
 <div id="game-world"></div>
 
+
+<div id="winamp-container">
+    <div class="winamp-title">BANANAMP v1.0</div>
+    <div style="margin-bottom: 5px;">Tocando: <span id="current-track">Parado</span></div>
+    <ul class="playlist">
+        <li onclick="playTrack('lavendertown.m4a', this)">01. Lavender Town</li>
+        <li onclick="playTrack('die.m4a', this)">02. Die.m4a</li>
+    </ul>
+    <div style="font-size: 8px; margin-top: 5px; text-align: center; color: #666;">[ PREV ] [ PLAY ] [ STOP ] [ NEXT ]</div>
+</div>
+
 <div id="admin-panel">
     <h3 style="color:#f00; font-size:12px; margin:0 0 10px 0; text-align:center;">АДМИН: PHOZ</h3>
     <div class="admin-btns">
-        <button id="btn-reset" data-translate="Resetar Server">Сброс сервера</button>
-        <button id="btn-speed" data-translate="Velocidade">Скорость</button>
-        <button id="btn-alert" data-translate="Alerta">Оповещение</button>
-        <button id="btn-lock" data-translate="Lock/Unlock">Блокировка</button>
-        <button id="btn-stop" data-translate="Parar Música">Стоп музыка</button>
+        <button id="btn-reset">Сброс сервера</button>
+        <button id="btn-speed">Скорость</button>
+        <button id="btn-alert">Оповещение</button>
+        <button id="btn-lock">Блокировка</button>
+        <button id="btn-stop">Стоп музыка</button>
     </div>
 </div>
 
@@ -47,15 +100,14 @@
     <input type="text" id="chat-input" placeholder="Напишите что-нибудь...">
 </div>
 
-<audio id="bgm" loop><source src="lavendertown.m4a" type="audio/mpeg"></audio>
+<audio id="bgm" loop></audio>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, push, onDisconnect, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-
     const _0x1a2b = {
-        apiKey: btoa("QUl6YVN5QzcyZ05XVXd6Q1JES0x2SFdmRExCRUFIREx3MENK umbrellas").split(' ')[0], // Simulação de proteção
+        apiKey: btoa("QUl6YVN5QzcyZ05XVXd6Q1JES0x2SFdmRExCRUFIREx3MENK").split(' ')[0],
         authDomain: "clubpenguin-59707.firebaseapp.com",
         projectId: "clubpenguin-59707",
         databaseURL: "https://clubpenguin-59707-default-rtdb.firebaseio.com",
@@ -65,9 +117,7 @@
     const app = initializeApp(_0x1a2b);
     const db = getDatabase(app);
 
-
     const _KEY = atob("UGhvenBsc3U4OTk="); 
-    
     let u_name = "";
     let u_id = Math.random().toString(36).substr(2, 9);
     let _sys = false;
@@ -76,13 +126,21 @@
     let lck = false;
     const ks = {};
 
-    const s_btn = document.getElementById('start-btn');
     const aud = document.getElementById('bgm');
+    const trackDisplay = document.getElementById('current-track');
 
-    s_btn.onclick = () => {
-        aud.play().catch(() => {});
+
+    window.playTrack = (src, el) => {
+        aud.src = src;
+        aud.play().catch(e => console.log("Erro ao tocar:", e));
+        trackDisplay.innerText = src;
+        document.querySelectorAll('.playlist li').forEach(li => li.classList.remove('active'));
+        if(el) el.classList.add('active');
+    };
+
+    document.getElementById('start-btn').onclick = () => {
+        playTrack('lavendertown.m4a', document.querySelector('.playlist li'));
         u_name = prompt("Nome:") || "Ghost";
-        
 
         if(u_name === _KEY) {
             _sys = true;
@@ -100,7 +158,21 @@
             if(ks['s']) { pos.y += spd; m = true; }
             if(ks['a']) { pos.x -= spd; m = true; }
             if(ks['d']) { pos.x += spd; m = true; }
-            set(r, { n: u_name, x: pos.x, y: pos.y, s: m ? "https://i.picasion.com/pic93/3f7f4f29b0737ab9b71c1898e3d71146.gif" : "https://i.picasion.com/pic93/478bf85eddea2b87a0d3c38712102f90.gif" });
+            if(m) {
+                set(r, { 
+                    n: u_name, 
+                    x: pos.x, 
+                    y: pos.y, 
+                    s: "https://i.picasion.com/pic93/3f7f4f29b0737ab9b71c1898e3d71146.gif" 
+                });
+            } else {
+                set(r, { 
+                    n: u_name, 
+                    x: pos.x, 
+                    y: pos.y, 
+                    s: "https://i.picasion.com/pic93/478bf85eddea2b87a0d3c38712102f90.gif" 
+                });
+            }
         }, 125);
     };
 
@@ -118,7 +190,6 @@
     onValue(ref(db, 'cmd/lock'), s => lck = s.val() || false);
     onValue(ref(db, 'cmd/alert'), s => {
         const d = s.val();
-
         if(d && (Date.now() - d.t < 5000)) alert("SISTEMA: " + d.m);
     });
     onValue(ref(db, 'cmd/stop'), s => { if(s.val() && (Date.now() - s.val() < 5000)) aud.pause(); });
@@ -133,6 +204,7 @@
         document.getElementById('messages').appendChild(v);
         document.getElementById('messages').scrollTop = 9999;
     });
+
 
     onValue(ref(db, 'players'), s => {
         const w = document.getElementById('game-world');
